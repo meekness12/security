@@ -1,0 +1,41 @@
+! =====================================================================
+! MODULE 02: LOCAL AAA AUTHENTICATION & ACCOUNT LOCKOUT
+! Reference: Handout Learning Outcome 5.2 (Pages 152-158)
+! =====================================================================
+
+enable
+configure terminal
+
+! Step 1: Create Local Administrative User Accounts
+username Admin privilege 15 secret Adminpa55
+username TechUser privilege 1 secret Techpa55
+
+! Step 2: Globally Enable AAA (Prerequisite for all AAA commands)
+aaa new-model
+
+! Step 3: Define Named Method Lists for Authentication
+! List 1: Default login list querying local database first
+aaa authentication login default local
+
+! List 2: Custom named list for remote VTY with fallback to enable password
+aaa authentication login VTY-ACCESS local enable
+
+! List 3: Console access requiring case-sensitive local credentials
+aaa authentication login CONSOLE-ACCESS local-case
+
+! Step 4: Apply Method Lists to Lines
+line con 0
+ login authentication CONSOLE-ACCESS
+ exit
+
+line vty 0 4
+ login authentication VTY-ACCESS
+ transport input ssh
+ exit
+
+! Step 5: Configure Account Lockout Policy (Security Hardening)
+! Lock user accounts after 3 consecutive failed login attempts
+aaa local authentication attempts max-fail 3
+
+end
+copy running-config startup-config

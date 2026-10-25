@@ -1,0 +1,56 @@
+! =====================================================================
+! CISCO PACKET TRACER 8.4.1.2 - SITE-TO-SITE IPSEC VPN USING CLI
+! ROUTER R3 - STAGE 2: COMPLETE IPSEC VPN CONFIGURATION
+! =====================================================================
+! Execute after R3 has reloaded with the securityk9 package active.
+! =====================================================================
+
+enable
+ciscoenpa55
+
+configure terminal
+
+! ---------------------------------------------------------------------
+! Step 2: Identify Interesting Traffic on R3 (Reciprocating ACL)
+! ---------------------------------------------------------------------
+! Permit IP traffic from R3 LAN (192.168.3.0/24) to R1 LAN (192.168.1.0/24)
+access-list 110 permit ip 192.168.3.0 0.0.0.255 192.168.1.0 0.0.0.255
+
+! ---------------------------------------------------------------------
+! Step 3: Configure IKE Phase 1 ISAKMP Policy & Pre-Shared Key
+! ---------------------------------------------------------------------
+crypto isakmp policy 10
+ encryption aes 256
+ authentication pre-share
+ group 5
+ exit
+
+! Pre-Shared Key with Peer R1 (S0/0/0 IP: 10.1.1.2)
+crypto isakmp key vpnpa55 address 10.1.1.2
+
+! ---------------------------------------------------------------------
+! Step 4: Configure IKE Phase 2 IPsec Policy (Transform-Set & Crypto Map)
+! ---------------------------------------------------------------------
+crypto ipsec transform-set VPN-SET esp-aes esp-sha-hmac
+
+crypto map VPN-MAP 10 ipsec-isakmp
+ description VPN connection to R1
+ set peer 10.1.1.2
+ set transform-set VPN-SET
+ match address 110
+ exit
+
+! ---------------------------------------------------------------------
+! Step 5: Bind Crypto Map to Outgoing WAN Interface (Serial 0/0/1)
+! ---------------------------------------------------------------------
+interface Serial0/0/1
+ crypto map VPN-MAP
+ exit
+
+! Return to privileged EXEC and save configuration
+end
+copy running-config startup-config
+
+! ---------------------------------------------------------------------
+! End of R3 IPsec Configuration
+! ---------------------------------------------------------------------

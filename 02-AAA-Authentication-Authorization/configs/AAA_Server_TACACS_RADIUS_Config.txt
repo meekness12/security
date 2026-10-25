@@ -1,0 +1,67 @@
+! =====================================================================
+! MODULE 02: SERVER-BASED AAA (TACACS+ & RADIUS) CONFIGURATION
+! Reference: Handout Learning Outcome 5.3 - 5.5 (Pages 159-184)
+! =====================================================================
+
+enable
+configure terminal
+
+! Step 1: Globally Enable AAA
+aaa new-model
+
+! Step 2: Define Fallback Local Administrator (Crucial if server is unreachable)
+username Admin privilege 15 secret Adminpa55
+
+! ---------------------------------------------------------------------
+! Step 3: Configure External AAA Servers
+! ---------------------------------------------------------------------
+
+! --- TACACS+ Server Definition (TCP Port 49, Full Packet Encryption) ---
+tacacs-server host 192.168.1.100 key TacacsKey123
+! Modern IOS Syntax (Alternative):
+! tacacs server ACS-SERVER
+!  address ipv4 192.168.1.100
+!  key TacacsKey123
+!  exit
+
+! --- RADIUS Server Definition (UDP Ports 1812/1813 or 1645/1646) ---
+radius-server host 192.168.1.101 auth-port 1812 acct-port 1813 key RadiusKey123
+! Modern IOS Syntax (Alternative):
+! radius server RADIUS-SERVER
+!  address ipv4 192.168.1.101 auth-port 1812 acct-port 1813
+!  key RadiusKey123
+!  exit
+
+! ---------------------------------------------------------------------
+! Step 4: Configure AAA Authentication Method Lists
+! ---------------------------------------------------------------------
+! Query TACACS+ first, then RADIUS, then fallback to Local DB, then Enable PW
+aaa authentication login default group tacacs+ group radius local enable
+aaa authentication login REMOTE-SSH group tacacs+ local
+
+! ---------------------------------------------------------------------
+! Step 5: Configure AAA Authorization (Command & Exec Control)
+! ---------------------------------------------------------------------
+! Authorize EXEC shell privileges via TACACS+, fallback to local
+aaa authorization exec default group tacacs+ local
+
+! Authorize Configuration Commands (Privilege Level 15)
+aaa authorization commands 15 default group tacacs+ local
+
+! ---------------------------------------------------------------------
+! Step 6: Configure AAA Accounting (Audit & Usage Tracking)
+! ---------------------------------------------------------------------
+! Record start/stop times for EXEC shells and privilege 15 commands
+aaa accounting exec default start-stop group tacacs+
+aaa accounting commands 15 default start-stop group tacacs+
+
+! ---------------------------------------------------------------------
+! Step 7: Apply to Lines
+! ---------------------------------------------------------------------
+line vty 0 4
+ login authentication REMOTE-SSH
+ transport input ssh
+ exit
+
+end
+copy running-config startup-config

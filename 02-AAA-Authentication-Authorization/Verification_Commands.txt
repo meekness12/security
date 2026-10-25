@@ -1,0 +1,44 @@
+=====================================================================
+MODULE 02: AAA VERIFICATION & TROUBLESHOOTING COMMANDS
+=====================================================================
+
+1. CHECK LOCKED-OUT LOCAL USER ACCOUNTS
+Command:
+    show aaa local user lockout
+Expected Output:
+    List of usernames locked due to exceeding max-fail threshold.
+
+2. UNLOCK LOCKED LOCAL USERS
+Command:
+    clear aaa local user lockout username Admin
+    clear aaa local user lockout all
+
+3. VERIFY AAA SERVERS & ACTIVE STATUS
+Command:
+    show tacacs
+    show radius
+    show aaa servers
+
+4. VIEW ACTIVE AAA USER SESSIONS
+Command:
+    show aaa sessions
+    show aaa user all
+
+5. TEST AAA SERVER REACHABILITY FROM CLI
+Command:
+    test aaa group tacacs+ Admin Adminpa55 legacy
+    test aaa group radius Admin Adminpa55 legacy
+Expected Output:
+    User was successfully authenticated. (or Rejected)
+
+6. REAL-TIME AAA DEBUGGING (ESSENTIAL FOR EXAM TROUBLESHOOTING)
+Command:
+    debug aaa authentication
+    debug aaa authorization
+    debug aaa accounting
+    debug tacacs
+    debug radius
+Expected Messages:
+    GETUSER, GETPASS, PASS, FAIL status messages.
+To turn off:
+    undebug all

@@ -1,0 +1,68 @@
+! =====================================================================
+! CISCO PACKET TRACER 4.4.1.1 - ZONE-BASED POLICY FIREWALL (ZPF)
+! ROUTER R3 - STAGE 2: COMPLETE ZPF CONFIGURATION
+! =====================================================================
+! Execute after R3 has finished rebooting with securityk9 active.
+! =====================================================================
+
+enable
+ciscoenpa55
+
+! Optional verification of license activation:
+show version | include Technology Package
+
+configure terminal
+
+! ---------------------------------------------------------------------
+! Part 2: Create the Firewall Zones
+! ---------------------------------------------------------------------
+zone security IN-ZONE
+exit
+zone security OUT-ZONE
+exit
+
+! ---------------------------------------------------------------------
+! Part 3: Identify Traffic Using an Extended ACL & Class-Map
+! ---------------------------------------------------------------------
+! Extended ACL 101: Permit all IP traffic originating from internal 192.168.3.0/24
+access-list 101 permit ip 192.168.3.0 0.0.0.255 any
+
+! Class-Map: Match-all referencing ACL 101
+class-map type inspect match-all IN-NET-CLASS-MAP
+ match access-group 101
+exit
+
+! ---------------------------------------------------------------------
+! Part 4: Specify Firewall Policies via Policy-Map
+! ---------------------------------------------------------------------
+policy-map type inspect IN-2-OUT-PMAP
+ class type inspect IN-NET-CLASS-MAP
+  inspect
+ exit
+exit
+
+! ---------------------------------------------------------------------
+! Part 5: Apply Firewall Policies to Zone-Pair and Interfaces
+! ---------------------------------------------------------------------
+! Create zone pair: source IN-ZONE to destination OUT-ZONE
+zone-pair security IN-2-OUT-ZPAIR source IN-ZONE destination OUT-ZONE
+ service-policy type inspect IN-2-OUT-PMAP
+ exit
+
+! Assign GigabitEthernet0/1 to internal security zone
+interface GigabitEthernet0/1
+ zone-member security IN-ZONE
+ exit
+
+! Assign Serial0/0/1 to external security zone
+interface Serial0/0/1
+ zone-member security OUT-ZONE
+ exit
+
+! Return to privileged EXEC mode and save configuration
+end
+copy running-config startup-config
+
+! ---------------------------------------------------------------------
+! End of R3 ZPF Configuration
+! ---------------------------------------------------------------------

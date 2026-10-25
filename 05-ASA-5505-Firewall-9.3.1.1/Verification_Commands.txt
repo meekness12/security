@@ -1,0 +1,110 @@
+=====================================================================
+CISCO PACKET TRACER 9.3.1.1 - CONFIGURING ASA BASIC SETTINGS & FIREWALL
+DEVICE-BY-DEVICE VERIFICATION COMMANDS & TESTS
+=====================================================================
+
+---------------------------------------------------------------------
+STEP 1: SWITCH PC-B FROM STATIC IP TO DHCP CLIENT
+---------------------------------------------------------------------
+Device: PC-B
+Location: Desktop > IP Configuration
+Action:
+    Click the (•) DHCP radio button.
+Expected Result:
+    IP Address: 192.168.1.5 (or within 192.168.1.5 - 192.168.1.36)
+    Subnet Mask: 255.255.255.0
+    Default Gateway: 192.168.1.1
+    DNS Server: 209.165.201.2
+    "DHCP request successful."
+
+
+---------------------------------------------------------------------
+STEP 2: VERIFY ASA INTERFACES & ROUTING TABLE
+---------------------------------------------------------------------
+Device: ASA 5505 (CCNAS-ASA)
+Location: CLI
+Command:
+    show interface ip brief
+Expected Output:
+    Interface                  IP-Address      OK? Method Status                Protocol
+    Vlan1                      192.168.1.1     YES manual up                    up
+    Vlan2                      209.165.200.226 YES manual up                    up
+    Vlan3                      192.168.2.1     YES manual up                    up
+
+Command:
+    show route
+Expected Output:
+    S    0.0.0.0 0.0.0.0 [1/0] via 209.165.200.225, outside
+
+
+---------------------------------------------------------------------
+STEP 3: TEST DYNAMIC PAT & MPF ICMP INSPECTION
+---------------------------------------------------------------------
+Device: PC-B
+Location: Desktop > Command Prompt
+Command:
+    ping 209.165.200.225
+Expected Result:
+    Pinging 209.165.200.225 with 32 bytes of data:
+    Reply from 209.165.200.225: bytes=32 time=... TTL=254
+    Reply from 209.165.200.225: bytes=32 time=... TTL=254
+    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)
+    (Dynamic PAT translates PC-B, and MPF inspects return ICMP replies).
+
+Device: ASA 5505 (CCNAS-ASA)
+Location: CLI
+Command:
+    show nat
+Expected Output:
+    Auto NAT Policies (Section 2)
+    1 (inside) to (outside) source dynamic inside-net interface
+        translate_hits = 4, untranslate_hits = 4
+
+
+---------------------------------------------------------------------
+STEP 4: TEST SECURE REMOTE ACCESS (SSH)
+---------------------------------------------------------------------
+[TEST 4.1] Inside SSH Access from PC-B
+Device: PC-B
+Location: Desktop > Command Prompt
+Command:
+    ssh -l admin 192.168.1.1
+Password:
+    adminpa55
+Expected Result:
+    Prompt changes to: CCNAS-ASA#
+    Type 'exit' to disconnect.
+
+[TEST 4.2] Remote Outside SSH Access from PC-C
+Device: PC-C
+Location: Desktop > Command Prompt
+Command:
+    ssh -l admin 209.165.200.226
+Password:
+    adminpa55
+Expected Result:
+    Prompt changes to: CCNAS-ASA#
+    Type 'exit' to disconnect.
+
+
+---------------------------------------------------------------------
+STEP 5: VERIFY DMZ ACCESS-LIST & STATIC NAT
+---------------------------------------------------------------------
+Device: ASA 5505 (CCNAS-ASA)
+Location: CLI
+Command:
+    show access-list
+Expected Output:
+    access-list OUTSIDE-DMZ; 2 elements
+    access-list OUTSIDE-DMZ line 1 extended permit icmp any host 192.168.2.3
+    access-list OUTSIDE-DMZ line 2 extended permit tcp any host 192.168.2.3 eq www
+
+
+---------------------------------------------------------------------
+STEP 6: PACKET TRACER COMPLETION CHECK
+---------------------------------------------------------------------
+Location: Packet Tracer Activity window
+Action: Click [Check Results]
+Expected Score:
+    Completion: 100%
+    Congratulations on completing this activity!

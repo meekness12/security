@@ -1,0 +1,40 @@
+! =====================================================================
+! MODULE 01: SSH SECURE DEVICE MANAGEMENT (CISCO SWITCH)
+! Reference: Handout Learning Outcome 1.2 (Pages 46-48)
+! =====================================================================
+
+enable
+configure terminal
+
+! Step 1: Switch Hostname & Domain Name
+hostname SW1
+ip domain-name ccnasecurity.com
+
+! Step 2: Management SVI & Default Gateway
+interface Vlan1
+ ip address 192.168.1.2 255.255.255.0
+ no shutdown
+ exit
+ip default-gateway 192.168.1.1
+
+! Step 3: Generate RSA Keypair
+crypto key generate rsa general-keys modulus 1024
+
+! Step 4: Local Admin User & Enable Secret
+enable secret ciscoenpa55
+username Admin privilege 15 secret Adminpa55
+
+! Step 5: Secure VTY Lines (0-15 on switches)
+line vty 0 15
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ exit
+
+! Step 6: Enforce SSHv2
+ip ssh version 2
+ip ssh time-out 60
+ip ssh authentication-retries 3
+
+end
+copy running-config startup-config

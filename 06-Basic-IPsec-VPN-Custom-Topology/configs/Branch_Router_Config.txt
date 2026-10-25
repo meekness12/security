@@ -1,0 +1,52 @@
+! =====================================================================
+! MODULE 06: BASIC SITE-TO-SITE IPSEC VPN (CUSTOM 3-ROUTER TOPOLOGY)
+! ROUTER: BRANCH
+! =====================================================================
+
+enable
+configure terminal
+
+! 1. Hostname & Interface IP Addressing
+hostname Branch
+interface GigabitEthernet0/0
+ ip address 11.0.0.1 255.255.255.0
+ no shutdown
+ exit
+
+interface Serial0/2/0
+ ip address 50.1.1.2 255.255.255.252
+ no shutdown
+ exit
+
+! 2. Default Routing to ISP
+ip route 0.0.0.0 0.0.0.0 50.1.1.1
+
+! 3. IKE Phase 1: ISAKMP Policy & Pre-Shared Key
+crypto isakmp policy 12
+ authentication pre-share
+ encryption 3des
+ hash md5
+ group 1
+ lifetime 3600
+ exit
+
+crypto isakmp key jojo123 address 20.1.1.2
+
+! 4. IKE Phase 2: IPsec Transform-Set & Crypto Map
+crypto ipsec transform-set jojo esp-3des esp-md5-hmac
+
+access-list 120 permit ip 11.0.0.0 0.255.255.255 10.0.0.0 0.255.255.255
+
+crypto map jojo 12 ipsec-isakmp
+ set peer 20.1.1.2
+ set transform-set jojo
+ match address 120
+ exit
+
+! 5. Bind Crypto Map to Outgoing WAN Interface
+interface Serial0/2/0
+ crypto map jojo
+ exit
+
+end
+copy running-config startup-config

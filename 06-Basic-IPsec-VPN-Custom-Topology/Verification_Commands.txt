@@ -1,0 +1,28 @@
+=====================================================================
+MODULE 06: BASIC SITE-TO-SITE IPSEC VPN - VERIFICATION COMMANDS
+=====================================================================
+
+1. BASELINE ROUTING TEST
+From PC0 (10.0.0.10) Command Prompt:
+    ping 11.0.0.10
+Expected: 4/4 replies received (verifies default routes and ISP static routes).
+
+2. IKE PHASE 1 ISAKMP SA CHECK
+On HQ CLI:
+    show crypto isakmp sa
+Expected:
+    IPv4 Crypto ISAKMP SA
+    dst             src             state          conn-id slot status
+    50.1.1.2        20.1.1.2        QM_IDLE              1    0 ACTIVE
+
+3. IPSEC PHASE 2 SA COUNTERS CHECK
+On HQ CLI:
+    show crypto ipsec sa
+Expected:
+    #pkts encaps: 4, #pkts encrypt: 4, #pkts digest: 4
+    #pkts decaps: 4, #pkts decrypt: 4, #pkts verify: 4
+
+4. CRYPTO MAP & TRANSFORM-SET VERIFICATION
+On HQ CLI:
+    show crypto map
+    show crypto ipsec transform-set

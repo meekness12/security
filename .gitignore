@@ -1,0 +1,22 @@
+# Office temporary and lock files
+~$*.docx
+~$*.doc
+~$*.xlsx
+~$*.pptx
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Scratch and temp files
+*.tmp
+*.temp
+*~

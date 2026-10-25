@@ -1,0 +1,115 @@
+=====================================================================
+CISCO PACKET TRACER 8.4.1.2 - SITE-TO-SITE IPSEC VPN USING CLI
+DEVICE-BY-DEVICE VERIFICATION COMMANDS & TESTS
+=====================================================================
+
+---------------------------------------------------------------------
+PART 1 (PRE-CHECK): BASELINE CONNECTIVITY PRIOR TO VPN
+---------------------------------------------------------------------
+
+[TEST 1.1] Verify IP reachability from PC-A to PC-C
+Device: PC-A
+Location: Desktop > Command Prompt
+Command:
+    ping 192.168.3.3
+Expected Result:
+    Reply from 192.168.3.3: bytes=32 time=... TTL=125
+    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)
+    (Baseline OSPF routing is functional).
+
+
+---------------------------------------------------------------------
+PART 3 (STEP 1): VERIFY IPSEC TUNNEL PRIOR TO INTERESTING TRAFFIC
+---------------------------------------------------------------------
+
+[TEST 3.1] Check IPsec SA state before triggering interesting traffic
+Device: R1
+Location: CLI (Privileged EXEC Mode)
+Command:
+    show crypto ipsec sa
+Expected Output:
+    interface: Serial0/0/0
+        Crypto map tag: VPN-MAP, local addr 10.1.1.2
+       protected vrf: (none)
+       local  ident (addr/mask/prot/port): (192.168.1.0/255.255.255.0/0/0)
+       remote ident (addr/mask/prot/port): (192.168.3.0/255.255.255.0/0/0)
+       current_peer 10.2.2.2 port 500
+         PERMIT, flags={origin_is_acl,}
+        #pkts encaps: 0, #pkts encrypt: 0, #pkts digest: 0
+        #pkts decaps: 0, #pkts decrypt: 0, #pkts verify: 0
+        #pkts compressed: 0, #pkts decompressed: 0
+        #pkts not compressed: 0, #pkts compr. failed: 0
+        #pkts not decompressed: 0, #pkts decompress failed: 0
+        #send errors 0, #recv errors 0
+
+
+---------------------------------------------------------------------
+PART 3 (STEP 2 & 3): GENERATE INTERESTING TRAFFIC & VERIFY TUNNEL
+---------------------------------------------------------------------
+
+[TEST 3.2] Send interesting traffic from PC-A to PC-C
+Device: PC-A
+Location: Desktop > Command Prompt
+Command:
+    ping 192.168.3.3
+Expected Result:
+    Pinging 192.168.3.3 with 32 bytes of data:
+    Reply from 192.168.3.3: bytes=32 time=... TTL=125
+    Reply from 192.168.3.3: bytes=32 time=... TTL=125
+    Reply from 192.168.3.3: bytes=32 time=... TTL=125
+    Reply from 192.168.3.3: bytes=32 time=... TTL=125
+    (First packet might time out during IKE negotiation, subsequent 4 replies succeed).
+
+[TEST 3.3] Verify IPsec SA encapsulation and encryption counters
+Device: R1
+Location: CLI
+Command:
+    show crypto ipsec sa
+Expected Output:
+        #pkts encaps: 4, #pkts encrypt: 4, #pkts digest: 4
+        #pkts decaps: 4, #pkts decrypt: 4, #pkts verify: 4
+    (Counters are > 0, confirming packets were encrypted through the IPsec tunnel).
+
+[TEST 3.4] Verify IKE Phase 1 ISAKMP Security Association
+Device: R1
+Location: CLI
+Command:
+    show crypto isakmp sa
+Expected Output:
+    IPv4 Crypto ISAKMP SA
+    dst             src             state          conn-id slot status
+    10.2.2.2        10.1.1.2        QM_IDLE              1    0 ACTIVE
+    (State QM_IDLE confirms Phase 1 ISAKMP SA is active and authenticated).
+
+
+---------------------------------------------------------------------
+PART 3 (STEP 4 & 5): UNINTERESTING TRAFFIC VERIFICATION
+---------------------------------------------------------------------
+
+[TEST 3.5] Send uninteresting traffic from PC-A to PC-B (R2 LAN)
+Device: PC-A
+Location: Desktop > Command Prompt
+Command:
+    ping 192.168.2.3
+Expected Result:
+    Reply from 192.168.2.3: bytes=32 time=... TTL=126
+    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)
+
+[TEST 3.6] Verify uninteresting traffic did NOT increment IPsec counters
+Device: R1
+Location: CLI
+Command:
+    show crypto ipsec sa | include #pkts encaps
+Expected Output:
+        #pkts encaps: 4, #pkts encrypt: 4, #pkts digest: 4
+    (Counter remains at 4! This proves traffic to 192.168.2.0/24 bypassed IPsec).
+
+
+---------------------------------------------------------------------
+PART 3 (STEP 6): PACKET TRACER COMPLETION CHECK
+---------------------------------------------------------------------
+Location: Packet Tracer Activity window
+Action: Click [Check Results]
+Expected Score:
+    Completion: 100%
+    Congratulations on completing this activity!

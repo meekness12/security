@@ -1,0 +1,32 @@
+! =====================================================================
+! CISCO PACKET TRACER 4.4.1.1 - ZONE-BASED POLICY FIREWALL (ZPF)
+! ROUTER R3 - STAGE 1: SECURITY TECHNOLOGY PACKAGE ACTIVATION
+! =====================================================================
+! Passwords configured on R3:
+!   Enable Secret: ciscoenpa55
+!   Console / VTY: ciscoconpa55 / ciscovtypa55
+!   Username / PW: Admin / Adminpa55
+! =====================================================================
+
+enable
+ciscoenpa55
+configure terminal
+
+! Step 1: Enable the Security Technology Package on Cisco 1941
+license boot module c1900 technology-package securityk9
+
+! Note: When prompted:
+! "Do you accept the End User License Agreement (EULA)? [yes/no]:"
+! Type: yes
+
+exit
+
+! Step 2: Save running-config to startup-config
+copy running-config startup-config
+
+! Step 3: Reload the router to apply the security license
+reload
+
+! Note: When prompted:
+! "Proceed with reload? [confirm]"
+! Press [Enter]

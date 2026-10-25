@@ -1,0 +1,28 @@
+! =====================================================================
+! MODULE 06: BASIC SITE-TO-SITE IPSEC VPN (CUSTOM 3-ROUTER TOPOLOGY)
+! ROUTER: ISP (TRANSIT)
+! =====================================================================
+
+enable
+configure terminal
+
+hostname ISP
+
+! WAN Interface to HQ
+interface Serial0/2/0
+ ip address 20.1.1.1 255.255.255.252
+ no shutdown
+ exit
+
+! WAN Interface to Branch
+interface Serial0/2/1
+ ip address 50.1.1.1 255.255.255.252
+ no shutdown
+ exit
+
+! Static Routes to Internal LANs via Customer Gateways
+ip route 10.0.0.0 255.255.255.0 20.1.1.2
+ip route 11.0.0.0 255.255.255.0 50.1.1.2
+
+end
+copy running-config startup-config

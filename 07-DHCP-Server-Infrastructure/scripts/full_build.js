@@ -1,0 +1,36 @@
+lwAddDevice("R1", 0, "2911", 300, 100);
+lwAddDevice("SW1", 1, "2960-24TT", 300, 220);
+lwAddDevice("Server0", 9, "Server-PT", 120, 340);
+lwAddDevice("PC0", 8, "PC-PT", 210, 340);
+lwAddDevice("PC1", 8, "PC-PT", 300, 340);
+lwAddDevice("PC2", 8, "PC-PT", 390, 340);
+lwAddDevice("PC3", 8, "PC-PT", 480, 340);
+lwAddLink("R1", "GigabitEthernet0/0", "SW1", "GigabitEthernet0/1", 8100);
+lwAddLink("Server0", "FastEthernet0", "SW1", "FastEthernet0/2", 8100);
+lwAddLink("PC0", "FastEthernet0", "SW1", "FastEthernet0/3", 8100);
+lwAddLink("PC1", "FastEthernet0", "SW1", "FastEthernet0/4", 8100);
+lwAddLink("PC2", "FastEthernet0", "SW1", "FastEthernet0/5", 8100);
+lwAddLink("PC3", "FastEthernet0", "SW1", "FastEthernet0/6", 8100);
+/* === Configuraciones CLI por dispositivo ===
+Copiar y pegar en la CLI de cada dispositivo. */
+/* --- R1 ---
+enable
+configure terminal
+hostname R1
+no ip domain-lookup
+
+interface GigabitEthernet0/0
+ ip address 192.168.1.1 255.255.255.0
+ no shutdown
+ exit
+
+end
+write memory
+*/ 
+/* --- SW1 ---
+enable
+configure terminal
+hostname SW1
+end
+write memory
+*/ 

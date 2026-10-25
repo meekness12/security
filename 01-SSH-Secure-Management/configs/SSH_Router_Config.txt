@@ -1,0 +1,32 @@
+! =====================================================================
+! MODULE 01: SSH SECURE DEVICE MANAGEMENT (CISCO ROUTER)
+! Reference: Handout Learning Outcome 1.2 (Pages 46-48)
+! =====================================================================
+
+enable
+configure terminal
+
+! Step 1: Unique Hostname & Domain Name (Prerequisites for RSA generation)
+hostname R1
+ip domain-name ccnasecurity.com
+
+! Step 2: Generate Asymmetric RSA Keys (Minimum recommended: 1024 bits)
+crypto key generate rsa general-keys modulus 1024
+
+! Step 3: Local Administrative User Account with Secret Password
+username Admin privilege 15 secret Adminpa55
+
+! Step 4: Configure VTY Lines for SSH-Only Access
+line vty 0 4
+ login local
+ transport input ssh
+ exec-timeout 10 0
+ exit
+
+! Step 5: Optional SSH Hardening Parameters
+ip ssh version 2
+ip ssh time-out 60
+ip ssh authentication-retries 3
+
+end
+copy running-config startup-config

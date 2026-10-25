@@ -1,0 +1,40 @@
+=====================================================================
+MODULE 01: SSH SECURE MANAGEMENT - VERIFICATION COMMANDS
+=====================================================================
+
+1. VERIFY SSH STATUS & ACTIVE PARAMETERS
+Device: Router or Switch CLI
+Command:
+    show ip ssh
+Expected Output:
+    SSH Enabled - version 2.0
+    Authentication timeout: 60 secs; Authentication retries: 3
+
+2. DISPLAY GENERATED RSA PUBLIC KEYS
+Command:
+    show crypto key mypubkey rsa
+Expected Output:
+    Key name: R1.ccnasecurity.com
+    Key type: RSA KEYS
+    Modulus size: 1024 bits
+
+3. TEST INBOUND SSH SESSION FROM CLIENT PC
+From PC Command Prompt:
+    ssh -l Admin 192.168.1.1
+Password:
+    Adminpa55
+Expected Output:
+    R1# (Direct access to privileged EXEC mode if privilege 15 configured)
+
+4. VERIFY ACTIVE SSH SESSIONS ON ROUTER
+Command:
+    show ssh
+Expected Output:
+    %No SSHv2 server connections running. (when idle)
+    Connection ... Version 2.0 ... Encryption AES256-CBC ... (when active)
+
+5. TROUBLESHOOTING SSH NEGOTIATION
+Command:
+    debug ip ssh
+    debug ip ssh detail
+    undebug all

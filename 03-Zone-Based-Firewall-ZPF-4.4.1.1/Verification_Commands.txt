@@ -1,0 +1,135 @@
+=====================================================================
+CISCO PACKET TRACER 4.4.1.1 - ZONE-BASED POLICY FIREWALL (ZPF)
+DEVICE-BY-DEVICE VERIFICATION COMMANDS & TESTS
+=====================================================================
+
+---------------------------------------------------------------------
+PART 1: BASELINE VERIFICATION (BEFORE FIREWALL CONFIGURATION)
+---------------------------------------------------------------------
+
+[TEST 1.1] Verify IP connectivity across the network
+Device: PC-A
+Location: Desktop > Command Prompt
+Command:
+    ping 192.168.3.3
+Expected Result:
+    Reply from 192.168.3.3: bytes=32 time=... TTL=...
+    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)
+
+[TEST 1.2] Verify SSH access to intermediate router R2
+Device: PC-C
+Location: Desktop > Command Prompt
+Command:
+    ssh -l Admin 10.2.2.2
+Password prompt:
+    Adminpa55
+Expected Result:
+    Prompt changes to: R2>
+    Type 'exit' to terminate SSH session.
+
+[TEST 1.3] Verify HTTP access from internal PC-C to external PC-A web server
+Device: PC-C
+Location: Desktop > Web Browser
+Action:
+    URL field: 192.168.1.3
+    Click: [Go]
+Expected Result:
+    Cisco Packet Tracer Web Server Welcome Page loads. Close browser.
+
+
+---------------------------------------------------------------------
+PART 6: TEST FIREWALL FUNCTIONALITY (IN-ZONE -> OUT-ZONE)
+(Must SUCCEED due to stateful inspect policy)
+---------------------------------------------------------------------
+
+[TEST 6.1] Ping external PC-A from internal PC-C
+Device: PC-C
+Location: Desktop > Command Prompt
+Command:
+    ping 192.168.1.3
+Expected Result:
+    Reply from 192.168.1.3: bytes=32 time=... TTL=...
+    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)
+
+[TEST 6.2] SSH to R2 from internal PC-C and inspect stateful session
+Device: PC-C
+Location: Desktop > Command Prompt
+Command:
+    ssh -l Admin 10.2.2.2
+Password prompt:
+    Adminpa55
+Expected Result:
+    Prompt changes to: R2>
+
+Device: R3 (Router CLI)
+While SSH session is still open on PC-C:
+Command:
+    show policy-map type inspect zone-pair sessions
+Expected Output:
+    Zone-pair: IN-2-OUT-ZPAIR
+      Service-policy inspect : IN-2-OUT-PMAP
+        Class-map: IN-NET-CLASS-MAP (match-all)
+          Match: access-group 101
+          Inspect
+            Established Sessions
+             Session ... (192.168.3.3:<port>)=>(10.2.2.2:22) ...
+
+Device: PC-C
+Action:
+    Type 'exit' on R2> to terminate the SSH session.
+
+[TEST 6.3] HTTP session from PC-C to PC-A server and inspect stateful session
+Device: PC-C
+Location: Desktop > Web Browser
+Action:
+    URL field: 192.168.1.3
+    Click: [Go]
+Expected Result:
+    Cisco Packet Tracer Welcome Page loads successfully.
+
+Device: R3 (Router CLI)
+While web page is loaded / active:
+Command:
+    show policy-map type inspect zone-pair sessions
+Expected Output:
+    Established Sessions
+     Session ... (192.168.3.3:<port>)=>(192.168.1.3:80) ...
+
+
+---------------------------------------------------------------------
+PART 7: TEST FIREWALL FUNCTIONALITY (OUT-ZONE -> IN-ZONE)
+(Must FAIL / DROP - unsolicited inbound traffic blocked)
+---------------------------------------------------------------------
+
+[TEST 7.1] Attempt ping from external PC-A server to internal PC-C
+Device: PC-A
+Location: Desktop > Command Prompt
+Command:
+    ping 192.168.3.3
+Expected Result:
+    Request timed out.
+    Request timed out.
+    Request timed out.
+    Request timed out.
+    Packets: Sent = 4, Received = 0, Lost = 4 (100% loss)
+
+[TEST 7.2] Attempt ping from external Router R2 to internal PC-C
+Device: R2
+Location: CLI
+Command:
+    ping 192.168.3.3
+Expected Result:
+    Type escape sequence to abort.
+    Sending 5, 100-byte ICMP Echos to 192.168.3.3, timeout is 2 seconds:
+    .....
+    Success rate is 0 percent (0/5)
+
+
+---------------------------------------------------------------------
+PART 8: PACKET TRACER COMPLETION CHECK
+---------------------------------------------------------------------
+Location: Packet Tracer Activity window
+Action: Click [Check Results]
+Expected Score:
+    Completion: 100%
+    Congratulations on completing this activity!
